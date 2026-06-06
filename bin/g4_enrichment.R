@@ -63,7 +63,15 @@ for (cn in names(rl)) {
   }
 }
 enr <- rbindlist(res, fill=TRUE)
+if (nrow(enr) == 0) {                       # no contrast had >=10 non-confounded DEGs
+  enr <- data.table(contrast=character(), set=character(), direction=character(),
+                    flag=character(), pct_deg=numeric(), pct_bg=numeric(),
+                    odds_ratio=numeric(), p=numeric(), n_deg=integer())
+}
 fwrite(enr, file.path(opt$outdir,"g4_deg_enrichment.csv"))
-cat(">>> g4_deg_enrichment.csv:", nrow(enr), "rows. Key (high-conf G4, all DEGs, with ribo):\n")
-print(enr[set=="with_ribo" & direction=="all" & flag=="has_g4_highconf"][order(contrast)])
+cat(">>> g4_deg_enrichment.csv:", nrow(enr), "rows.\n")
+if (nrow(enr) && "set" %in% names(enr)) {
+  cat("Key (high-conf G4, all DEGs, with ribo):\n")
+  print(enr[set=="with_ribo" & direction=="all" & flag=="has_g4_highconf"][order(contrast)])
+} else cat(">>> No contrast had >=10 non-confounded DEGs -> no enrichment computed (expected on tiny/low-power data).\n")
 cat(">>> g4_enrichment complete.\n")

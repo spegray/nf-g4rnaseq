@@ -1,0 +1,122 @@
+---
+title: "nf-g4rnaseq report"
+subtitle: "RNA-seq differential expression + G-quadruplex / RNA:DNA hybrid-G4 analysis"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    embed-resources: true
+    theme: cosmo
+    code-tools: false
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r setup}
+suppressPackageStartupMessages({ library(data.table); library(knitr) })
+ex  <- function(p) file.exists(p)
+img <- function(p, cap="") if (ex(p)) cat(sprintf("\n![%s](%s)\n\n", cap, p))
+rd  <- function(p) if (ex(p)) fread(p) else NULL
+# result directories are staged with these names (placeholders if a stage was skipped)
+```
+
+This report is generated automatically from the pipeline results. Sections appear only for stages that were run. See `docs/output.md` for column definitions.
+
+```{r de, results='asis'}
+if (dir.exists("deseq2")) {
+  cat("# Differential expression\n\n")
+  s <- rd("deseq2/deg_summary.csv")
+  if (!is.null(s)) { cat("Significant genes per contrast (padj threshold):\n\n"); print(kable(s)); cat("\n\n") }
+  cat("## Quality control\n\n")
+  img("deseq2/figures/PCA.png", "PCA of variance-stabilised counts")
+  img("deseq2/figures/sample_distance_heatmap.png", "Sample-to-sample distance")
+  img("deseq2/figures/dispersion.png", "Dispersion estimates")
+  cat("## Per-contrast results\n\n")
+  csvs <- setdiff(list.files("deseq2", pattern="\\.csv$"), "deg_summary.csv")
+  for (cf in csvs) {
+    id <- sub("\\.csv$","",cf); d <- rd(file.path("deseq2", cf))
+    if (is.null(d)) next
+    cat(sprintf("### %s\n\n", id))
+    nm <- if ("std_name" %in% names(d)) "std_name" else "gene_id"
+    top <- head(d[order(d$padj)][, intersect(c(nm,"log2FoldChange","padj","baseMean"), names(d)), with=FALSE], 8)
+    print(kable(top, digits=3, caption=sprintf("Top genes by padj — %s", id)))
+    img(sprintf("deseq2/figures/volcano_%s.png", id))
+    cat("\n\n")
+  }
+}
+```
+
+```{r g4, results='asis'}
+if (dir.exists("g4") && ex("g4/g4_sites.tsv")) {
+  g <- fread("g4/g4_sites.tsv")
+  cat("# G-quadruplex landscape\n\n")
+  cat(sprintf("- **%d** predicted G4 sites (+ strand: %d, − strand: %d).\n", nrow(g), sum(g$strand=="+"), sum(g$strand=="-")))
+  cat(sprintf("- canonical-strength (≥3 tetrads): %d; two-quartet: %d; high-confidence (score≥47): %d.\n\n",
+              sum(g$n_tetrads>=3), sum(g$n_tetrads==2), sum(g$score>=47)))
+  f <- rd("g4/gene_g4_features.tsv")
+  if (!is.null(f)) cat(sprintf("- **%.1f%%** of genes have a proximal G4 (any); **%.1f%%** high-confidence.\n\n",
+                               100*mean(f$has_g4), 100*mean(f$has_g4_highconf)))
+}
+```
+
+```{r hybrid, results='asis'}
+hf <- if (ex("hybrid/gene_hybrid_g4.tsv")) "hybrid/gene_hybrid_g4.tsv" else if (ex("g4/gene_hybrid_g4.tsv")) "g4/gene_hybrid_g4.tsv" else NA
+if (!is.na(hf)) {
+  h <- fread(hf)
+  cat("# RNA:DNA hybrid G-quadruplex (PHQS)\n\n")
+  cat("Implements the co-transcriptional hybrid-G4 model (Zheng et al. 2013): a gene whose coding strand has only 2–3 G-tracts — too few for a DNA-only G4 — can still form a G4 with the nascent transcript.\n\n")
+  cat(sprintf("- hybrid-**capable** (≥%s tracts): **%.1f%%** of genes; hybrid-**specific** (2–3 tracts, no DNA-only G4): **%.1f%%**.\n\n",
+              "2", 100*mean(h$hybrid_capable), 100*mean(h$hybrid_specific)))
+  hs <- head(h[hybrid_specific==TRUE][order(sense_G_frac)][, intersect(c("std_name","biotype","sense_G_frac","sense_G3_tracts"), names(h)), with=FALSE], 8)
+  if (nrow(hs)) print(kable(hs, caption="Lowest-guanine hybrid-specific genes"))
+  cat("\n\n")
+}
+```
+
+```{r g4enrich, results='asis'}
+if (ex("g4enrich/g4_deg_enrichment.csv")) {
+  e <- fread("g4enrich/g4_deg_enrichment.csv")
+  cat("# Are differentially-expressed genes enriched for G4s?\n\n")
+  key <- e[get("set")=="with_ribo" & direction=="all" & flag %in% c("has_g4_highconf","hybrid_capable")]
+  if (nrow(key)) print(kable(key[, intersect(c("contrast","flag","pct_deg","pct_bg","odds_ratio","p"), names(key)), with=FALSE], digits=3))
+  cat("\n\n")
+}
+```
+
+```{r go, results='asis'}
+if (dir.exists("go")) {
+  gos <- list.files("go", pattern="^GO_BP_.*csv$")
+  if (length(gos)) {
+    cat("# GO enrichment (top biological process per contrast)\n\n")
+    for (gf in gos) { d <- rd(file.path("go", gf)); if (!is.null(d) && nrow(d))
+      cat(sprintf("- **%s**: %s (p.adj %.1g)\n", sub("GO_BP_|\\.csv","",gf), d$Description[1], d$p.adjust[1])) }
+    cat("\n")
+    img(list.files("go/figures", pattern="dotplot_GOBP.*down.*png", full.names=TRUE)[1])
+  }
+}
+```
+
+```{r gsea, results='asis'}
+if (dir.exists("gsea")) {
+  cat("# GSEA (threshold-free)\n\n")
+  gs <- list.files("gsea", pattern="^gseaG4_.*csv$")
+  for (gf in gs) { d <- rd(file.path("gsea", gf)); if (!is.null(d))
+    cat(sprintf("- **%s** (G4 sets): %s\n", sub("gseaG4_|\\.csv","",gf),
+        paste(sprintf("%s NES=%.2f (padj %.2g)", d$ID, d$NES, d$p.adjust), collapse="; "))) }
+  cat("\n\n"); img("gsea/figures/G4_GSEA_NES_byContrast.png", "G4 gene-set GSEA across contrasts (NES<0 = down-regulated)")
+}
+```
+
+```{r integrate, results='asis'}
+if (ex("integrate/master_gene_table.tsv")) {
+  m <- fread("integrate/master_gene_table.tsv")
+  cat(sprintf("# Integrated table\n\nThe master per-gene table (`integrate/master_gene_table.tsv`) joins expression, per-contrast statistics, proximal-G4 features and hybrid-G4 class for **%d** genes — the backbone for follow-up.\n\n", nrow(m)))
+}
+```
+
+# Methods & caveats
+
+Reads were quantified per gene (featureCounts; strandedness auto-detected) and modelled with **DESeq2** using the configured design; fold-changes are shrunken (apeglm/ashr). G4s were predicted with **pqsfinder** (both strands); the RNA:DNA hybrid-G4 (PHQS) scan counts clustered coding-strand G-tracts. Functional enrichment used **clusterProfiler** (GO/KEGG) and **fgsea** (GSEA, including the genotype×treatment interaction). Interpret with attention to: replication/power (GSEA is more robust than per-gene tests at low n), the low specificity of permissive G4 calling (prefer the high-confidence subset), and any confounded design factors (flag via `--flag_genes`). Full tool versions and citations: `CITATIONS.md`.

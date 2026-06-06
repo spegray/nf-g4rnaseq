@@ -18,6 +18,8 @@ workflow {
     def NO_G4     = file("${projectDir}/assets/NO_G4")
     def NO_HYBRID = file("${projectDir}/assets/NO_HYBRID")
     def NO_GSEA   = file("${projectDir}/assets/NO_GSEA")
+    def NO_G4ENRICH = file("${projectDir}/assets/NO_G4ENRICH")
+    def NO_GO     = file("${projectDir}/assets/NO_GO")
     def header  = file(params.input).readLines()[0].split(',').collect{ it.trim() }
     def step    = params.step != 'auto' ? params.step :
                   ( params.count_matrix ? 'counts' : (header.contains('fastq_1') ? 'fastq' : 'bam') )
@@ -72,13 +74,20 @@ workflow {
     if (!params.skip_hybrid) { HYBRID_G4(genome, gene_info);  hybrid_dir = HYBRID_G4.out.dir.first() }
 
     // ---- G4<->DE enrichment / GO / GSEA / integrate ----
-    if (!params.skip_g4 && !params.skip_hybrid) G4_ENRICHMENT(deseq2, g4_dir, hybrid_dir, flag_genes)
+    g4enrich_dir = Channel.value(NO_G4ENRICH)
+    if (!params.skip_g4 && !params.skip_hybrid) {
+        G4_ENRICHMENT(deseq2, g4_dir, hybrid_dir, flag_genes)
+        g4enrich_dir = G4_ENRICHMENT.out.dir.ifEmpty(NO_G4ENRICH).first()
+    }
     GO_ENRICHMENT(deseq2, flag_genes)
+    go_dir = GO_ENRICHMENT.out.dir.ifEmpty(NO_GO).first()
     gsea_dir = Channel.value(NO_GSEA)
     if (!params.skip_gsea && !params.skip_g4 && !params.skip_hybrid) {
         GSEA(deseq2, g4_dir, hybrid_dir); gsea_dir = GSEA.out.dir.ifEmpty(NO_GSEA).first()
     }
     INTEGRATE(gene_info, g4_dir, hybrid_dir, deseq2, flag_genes)
 
-    if (!params.skip_report) REPORT(deseq2, g4_dir, hybrid_dir, gsea_dir, INTEGRATE.out.dir.first())
+    if (!params.skip_report)
+        REPORT(deseq2, g4_dir, hybrid_dir, g4enrich_dir, go_dir, gsea_dir, INTEGRATE.out.dir.first(),
+               file("${projectDir}/assets/report_template.qmd"))
 }

@@ -1,0 +1,13 @@
+sample,genotype,treatment,replicate
+WT_unt_r1,WT,untreated,1
+WT_PDS_r1,WT,PDS,1
+WT_unt_r2,WT,untreated,2
+WT_PDS_r2,WT,PDS,2
+PIF1d_unt_r1,PIF1d,untreated,1
+PIF1d_PDS_r1,PIF1d,PDS,1
+PIF1d_unt_r2,PIF1d,untreated,2
+PIF1d_PDS_r2,PIF1d,PDS,2
+RecQd_unt_r1,RecQd,untreated,1
+RecQd_PDS_r1,RecQd,PDS,1
+RecQd_unt_r2,RecQd,untreated,2
+RecQd_PDS_r2,RecQd,PDS,2

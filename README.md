@@ -22,9 +22,13 @@ nextflow run OWNER/nf-g4rnaseq -r main -profile docker \
     --outdir       results
 ```
 
-Reproduce the original yeast study end-to-end:
+Self-contained smoke test (downsampled chromosome I, ~1–2 min — bundled data, nothing else needed):
 ```bash
-nextflow run . -profile test,docker --outdir results   # uses assets/*_example.csv
+nextflow run . -profile test,docker --outdir results
+```
+Reproduce the full original yeast study (needs the full reference + count matrix):
+```bash
+nextflow run . -profile test_full,docker --outdir results
 ```
 
 ## Three entry points (auto-detected from the sample sheet, or set `--step`)

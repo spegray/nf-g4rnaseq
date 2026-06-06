@@ -11,20 +11,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "17" }
       - uses: nf-core/setup-nextflow@v2
-        with:
-          version: "latest-stable"
-      # -preview compiles the DSL2 workflow and validates channel wiring
-      # without executing processes (no containers/data needed).
-      - name: Nextflow preview (compile)
+        with: { version: "latest-stable" }
+      - name: Nextflow preview (compile, no execution)
         run: nextflow run . -profile test -preview
 
-  # A full end-to-end test (`-profile test,docker`) should be enabled once a
-  # downsampled test dataset (a few chromosomes + a small count matrix) is
-  # bundled under assets/test_data/, so CI can run without large references.
-  #   test:
-  #     runs-on: ubuntu-latest
-  #     steps:
-  #       - uses: actions/checkout@v4
-  #       - uses: nf-core/setup-nextflow@v2
-  #       - run: nextflow run . -profile test,docker --outdir results
+  test:
+    name: End-to-end (bundled chr I data)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "17" }
+      - uses: nf-core/setup-nextflow@v2
+        with: { version: "latest-stable" }
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: containers/environment.yml
+          cache-environment: true
+      - name: Run pipeline on the downsampled test data
+        shell: bash -el {0}     # activates the micromamba env (tools on PATH)
+        run: nextflow run . -profile test --outdir results
+      # Faster equivalent once the analysis image is built & pushed
+      # (containers/Dockerfile) and params.r_container is set:
+      #   nextflow run . -profile test,docker --outdir results

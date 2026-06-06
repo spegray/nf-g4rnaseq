@@ -65,7 +65,10 @@ dds <- DESeqDataSetFromMatrix(counts, cd, design = design_fm)
 dds <- dds[rowSums(counts(dds)) >= opt$min_count, ]
 dds <- DESeq(dds)
 cat(">>> resultsNames:\n"); print(resultsNames(dds))
-vsd <- vst(dds, blind=TRUE)
+# vst() fits on >=1000 genes by default; fall back to the exact transform on
+# small datasets (e.g. a downsampled test) where vst() errors.
+vsd <- tryCatch(vst(dds, blind=TRUE),
+                error=function(e) varianceStabilizingTransformation(dds, blind=TRUE))
 saveRDS(dds, file.path(opt$outdir,"dds.rds")); saveRDS(vsd, file.path(opt$outdir,"vsd.rds"))
 
 # ---- QC figures ------------------------------------------------------------

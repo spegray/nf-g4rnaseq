@@ -11,8 +11,9 @@
 | `g4/g4_deg_enrichment.csv` | Fisher tests: are DEGs (all/up/down, per contrast) enriched for proximal/hybrid G4s? (with an optional ribosome-excluded robustness set) |
 | `go/` | GO (BP/MF/CC) and KEGG over-representation per contrast (up & down), with dotplots — only if `--orgdb` given |
 | `gsea/` | threshold-free GSEA per contrast: `gseGO_*.csv` (GO sets) and `gseaG4_*.csv` (custom G4 gene sets); `figures/G4_GSEA_NES_byContrast.png`. Works on simple, pairwise AND interaction contrasts (NES<0 = the set is coordinately down-regulated) |
-| `report/master_gene_table.tsv` | one row per gene: expression, per-contrast log2FC+padj, proximal-G4 features, hybrid-G4 class, flags — the integrated backbone |
-| `report/summary_report.md` | human-readable summary of the run |
+| `integrate/master_gene_table.tsv` | one row per gene: expression, per-contrast log2FC+padj, proximal-G4 features, hybrid-G4 class, flags — the integrated backbone |
+| `report/report.html` | the full **Quarto** report (narrative + tables + embedded figures); rendered where Quarto is available (bundled in the container) |
+| `report/summary_report.md` | dependency-free Markdown summary, always produced (and the fallback if Quarto is unavailable) |
 
 ## Interpreting the G4 columns
 - **canonical G4** = ≥4 G-tracts on one DNA strand (`n_tetrads`≥3, classic motif).

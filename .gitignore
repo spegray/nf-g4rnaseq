@@ -1,5 +1,5 @@
-work/
-results/
+work*/
+results*/
 .nextflow/
 .nextflow.log*
 .devtest/
