@@ -1,5 +1,8 @@
-work*/
-results*/
+# anchored to repo root so they don't match .github/workflows/
+/work/
+/work_*/
+/results/
+/results_*/
 .nextflow/
 .nextflow.log*
 .devtest/
