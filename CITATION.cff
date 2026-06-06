@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+title: "nf-g4rnaseq"
+message: >-
+  If you use this software, please cite it using these metadata, and also cite
+  the underlying tools listed in CITATIONS.md.
+type: software
+authors:
+  - given-names: Spencer
+    family-names: Gray
+    # orcid: "https://orcid.org/0000-0000-0000-0000"   # add your ORCID
+repository-code: "https://github.com/OWNER/nf-g4rnaseq"
+url: "https://github.com/OWNER/nf-g4rnaseq"
+abstract: >-
+  A configurable Nextflow (DSL2) pipeline for RNA-seq differential expression
+  integrated with G-quadruplex (G4) prediction and co-transcriptional RNA:DNA
+  hybrid-G4 (PHQS) analysis, with GO/KEGG enrichment and GSEA.
+keywords:
+  - RNA-seq
+  - differential expression
+  - G-quadruplex
+  - RNA:DNA hybrid G-quadruplex
+  - PHQS
+  - Nextflow
+  - DESeq2
+  - bioinformatics
+license: MIT
+version: "0.1.0"
+date-released: "2026-06-06"
+# doi: "10.5281/zenodo.XXXXXXX"   # add the Zenodo DOI after archiving a release

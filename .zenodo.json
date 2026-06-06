@@ -1,0 +1,21 @@
+{
+  "title": "nf-g4rnaseq: RNA-seq differential expression + G-quadruplex / RNA:DNA hybrid-G4 (PHQS) analysis pipeline",
+  "description": "A configurable Nextflow (DSL2) pipeline for RNA-seq differential expression integrated with G-quadruplex (G4) prediction and co-transcriptional RNA:DNA hybrid-G4 (PHQS) analysis, including GO/KEGG enrichment and GSEA. Sample-sheet + contrasts driven; FASTQ/BAM/count-matrix entry points; organism-configurable; containerized.",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "MIT",
+  "creators": [
+    { "name": "Gray, Spencer" }
+  ],
+  "keywords": [
+    "RNA-seq",
+    "differential expression",
+    "G-quadruplex",
+    "RNA:DNA hybrid G-quadruplex",
+    "PHQS",
+    "Nextflow",
+    "DESeq2",
+    "pqsfinder",
+    "bioinformatics"
+  ]
+}

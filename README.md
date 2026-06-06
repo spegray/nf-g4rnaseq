@@ -71,6 +71,11 @@ git tag v0.1.0 && git push origin v0.1.0      # -> ghcr.io/<owner>/nf-g4rnaseq-r
 ```
 Then make the GHCR package public and set `params.r_container` (or pass `--r_container`). The environment is verified to solve on linux-64, so the build is reliable. See [`containers/README.md`](containers/README.md).
 
-## Citation
+## Citing
 
-If you use nf-g4rnaseq, please cite the tools it wraps (see [`CITATIONS.md`](CITATIONS.md)), notably DESeq2, pqsfinder, clusterProfiler/fgsea, and — for the hybrid-G4 (PHQS) model — Zheng et al. 2013, *Nucleic Acids Research*. Licensed under MIT.
+If you use nf-g4rnaseq, please cite it — GitHub shows a **"Cite this repository"** button generated from [`CITATION.cff`](CITATION.cff) — and the tools it wraps ([`CITATIONS.md`](CITATIONS.md)), notably DESeq2, pqsfinder, clusterProfiler/fgsea, and, for the RNA:DNA hybrid-G4 (PHQS) model, Zheng et al. 2013, *Nucleic Acids Research* ([10.1093/nar/gkt264](https://doi.org/10.1093/nar/gkt264)).
+
+**Get a citable DOI:** connect the repo to [Zenodo](https://zenodo.org) and publish a GitHub release — Zenodo mints a DOI (metadata pre-filled by [`.zenodo.json`](.zenodo.json)). Then add that DOI to `CITATION.cff`, `CHANGELOG.md`, `nextflow.config` (`manifest.doi`), and as a badge here:
+`[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)`
+
+Licensed under [MIT](LICENSE). Changes are tracked in [`CHANGELOG.md`](CHANGELOG.md).
