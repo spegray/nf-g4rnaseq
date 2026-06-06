@@ -1,0 +1,43 @@
+# Unified environment for nf-g4rnaseq.
+#  - Used directly by `-profile conda` (one env for every process).
+#  - Built into the Docker/Singularity image (containers/Dockerfile) used by
+#    `-profile docker` / `-profile singularity` for the R analysis processes.
+# Pin versions on release for full reproducibility (these match the validated study).
+name: nf-g4rnaseq
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # --- upstream / quantification tools (FASTQ + BAM entry) ---
+  - samtools=1.23
+  - subread=2.1.1          # featureCounts
+  - bedtools=2.31
+  - seqkit=2.13
+  - fastp=0.23.4
+  - star=2.7.11b
+  - umi_tools=1.1.5
+  - multiqc=1.21
+  # --- R + analysis stack ---
+  - r-base=4.4
+  - bioconductor-deseq2=1.46
+  - bioconductor-apeglm
+  - r-ashr
+  - bioconductor-pqsfinder=2.22
+  - bioconductor-biostrings
+  - bioconductor-genomicranges
+  - bioconductor-rtracklayer
+  - bioconductor-clusterprofiler
+  - bioconductor-go.db
+  - bioconductor-enrichplot
+  - bioconductor-fgsea
+  - bioconductor-org.sc.sgd.db   # example organism; add your own OrgDb for other species
+  - r-optparse
+  - r-data.table
+  - r-ggplot2
+  - r-ggrepel
+  - r-pheatmap
+  - r-rcolorbrewer
+  - r-matrixstats
+  # --- reporting ---
+  - quarto
+  - pandoc

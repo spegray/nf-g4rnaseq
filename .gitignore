@@ -1,0 +1,12 @@
+work/
+results/
+.nextflow/
+.nextflow.log*
+.devtest/
+*.pyc
+__pycache__/
+.DS_Store
+timeline*.html
+report*.html
+trace*.txt
+dag*.html

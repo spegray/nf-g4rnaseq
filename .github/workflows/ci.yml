@@ -1,0 +1,30 @@
+name: CI
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  compile:
+    name: Compile & wiring check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nf-core/setup-nextflow@v2
+        with:
+          version: "latest-stable"
+      # -preview compiles the DSL2 workflow and validates channel wiring
+      # without executing processes (no containers/data needed).
+      - name: Nextflow preview (compile)
+        run: nextflow run . -profile test -preview
+
+  # A full end-to-end test (`-profile test,docker`) should be enabled once a
+  # downsampled test dataset (a few chromosomes + a small count matrix) is
+  # bundled under assets/test_data/, so CI can run without large references.
+  #   test:
+  #     runs-on: ubuntu-latest
+  #     steps:
+  #       - uses: actions/checkout@v4
+  #       - uses: nf-core/setup-nextflow@v2
+  #       - run: nextflow run . -profile test,docker --outdir results

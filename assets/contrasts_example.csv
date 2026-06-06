@@ -1,0 +1,9 @@
+id,type,factor,target,reference,within
+PDS_in_WT,simple,treatment,PDS,untreated,genotype=WT
+PDS_in_PIF1d,simple,treatment,PDS,untreated,genotype=PIF1d
+PDS_in_RecQd,simple,treatment,PDS,untreated,genotype=RecQd
+PIF1d_vs_WT,pairwise,genotype,PIF1d,WT,
+RecQd_vs_WT,pairwise,genotype,RecQd,WT,
+PIF1d_vs_RecQd,pairwise,genotype,PIF1d,RecQd,
+interaction_PIF1d,interaction,genotype:treatment,PIF1d:PDS,WT:untreated,
+interaction_RecQd,interaction,genotype:treatment,RecQd:PDS,WT:untreated,

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "nf-g4rnaseq pipeline parameters",
+  "description": "RNA-seq differential expression + G-quadruplex / RNA:DNA hybrid-G4 analysis",
+  "type": "object",
+  "$defs": {
+    "input_output": {
+      "title": "Input / output",
+      "type": "object",
+      "required": ["input", "outdir", "fasta", "gff", "contrasts"],
+      "properties": {
+        "input":        { "type": "string", "format": "file-path", "description": "Sample sheet CSV (sample + factor columns; fastq_1/bam as needed)" },
+        "outdir":       { "type": "string", "format": "directory-path", "default": "results" },
+        "step":         { "type": "string", "enum": ["auto","fastq","bam","counts"], "default": "auto", "description": "Entry point (auto-detected from sample sheet if 'auto')" },
+        "count_matrix": { "type": "string", "format": "file-path", "description": "Gene x sample count matrix (required when step=counts)" }
+      }
+    },
+    "reference": {
+      "title": "Reference / organism",
+      "type": "object",
+      "properties": {
+        "fasta":           { "type": "string", "format": "file-path", "description": "Genome FASTA" },
+        "gff":             { "type": "string", "format": "file-path", "description": "GFF3 annotation" },
+        "harmonize":       { "type": "string", "enum": ["length","map","none"], "default": "length", "description": "Reconcile genome/annotation/BAM chromosome names" },
+        "seqname_map":     { "type": "string", "format": "file-path", "description": "2-col old<TAB>new map (harmonize=map)" },
+        "orgdb":           { "type": "string", "description": "Bioconductor OrgDb (e.g. org.Sc.sgd.db) to enable GO/GSEA-GO" },
+        "kegg_organism":   { "type": "string", "description": "KEGG organism code (e.g. sce) to enable KEGG" },
+        "gene_id_keytype": { "type": "string", "default": "ORF", "description": "OrgDb keytype matching gene IDs (ORF/ENSEMBL/...)" }
+      }
+    },
+    "design": {
+      "title": "Design / contrasts",
+      "type": "object",
+      "properties": {
+        "design_formula":   { "type": "string", "default": "~ replicate + genotype * treatment" },
+        "contrasts":        { "type": "string", "format": "file-path", "description": "Contrasts CSV (id,type,factor,target,reference,within)" },
+        "reference_levels": { "type": "string", "description": "'factor=level;factor2=level2' reference levels" },
+        "flag_genes":       { "type": "string", "format": "file-path", "description": "Optional CSV gene_id,category to flag/exclude" }
+      }
+    },
+    "analysis": {
+      "title": "Analysis parameters",
+      "type": "object",
+      "properties": {
+        "strandedness":      { "type": "string", "default": "auto", "description": "featureCounts -s: auto|0|1|2" },
+        "min_count":         { "type": "integer", "default": 10 },
+        "padj":              { "type": "number", "default": 0.05 },
+        "g4_min_score":      { "type": "integer", "default": 25, "description": "pqsfinder min score (permissive=25, strict=47)" },
+        "g4_highconf_score": { "type": "integer", "default": 47 },
+        "g4_promoter":       { "type": "integer", "default": 500, "description": "bp upstream of TSS counted as proximal" },
+        "hybrid_run_len":    { "type": "integer", "default": 3 },
+        "hybrid_loop_max":   { "type": "integer", "default": 12 },
+        "hybrid_span_max":   { "type": "integer", "default": 100 },
+        "hybrid_min_tracts": { "type": "integer", "default": 2, "description": "min coding-strand G-tracts for hybrid-capable (2 = 2DNA:2RNA)" },
+        "skip_g4":     { "type": "boolean", "default": false },
+        "skip_hybrid": { "type": "boolean", "default": false },
+        "skip_go":     { "type": "boolean", "default": false },
+        "skip_gsea":   { "type": "boolean", "default": false },
+        "skip_report": { "type": "boolean", "default": false }
+      }
+    }
+  },
+  "allOf": [
+    { "$ref": "#/$defs/input_output" },
+    { "$ref": "#/$defs/reference" },
+    { "$ref": "#/$defs/design" },
+    { "$ref": "#/$defs/analysis" }
+  ]
+}

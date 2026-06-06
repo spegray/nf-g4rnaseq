@@ -1,0 +1,13 @@
+sample,bam,genotype,treatment,replicate
+WT_unt_r1,/Users/spencergray/Desktop/G4-RNA-seq/42D8SP_bam/42D8SP_1_WT_2_dedup-mapped-reads.bam,WT,untreated,1
+WT_PDS_r1,/Users/spencergray/Desktop/G4-RNA-seq/42D8SP_bam/42D8SP_2_WT_PDS_2_dedup-mapped-reads.bam,WT,PDS,1
+WT_unt_r2,/Users/spencergray/Desktop/G4-RNA-seq/42D8SP_bam/42D8SP_3_WT_3_dedup-mapped-reads.bam,WT,untreated,2
+WT_PDS_r2,/Users/spencergray/Desktop/G4-RNA-seq/42D8SP_bam/42D8SP_4_WT_PDS_3_dedup-mapped-reads.bam,WT,PDS,2
+PIF1d_unt_r1,/Users/spencergray/Desktop/G4-RNA-seq/42D8SP_bam/42D8SP_5_PIF1_2_dedup-mapped-reads.bam,PIF1d,untreated,1
+PIF1d_PDS_r1,/Users/spencergray/Desktop/G4-RNA-seq/42D8SP_bam/42D8SP_6_PIF1_PDS_2_dedup-mapped-reads.bam,PIF1d,PDS,1
+PIF1d_unt_r2,/Users/spencergray/Desktop/G4-RNA-seq/42D8SP_bam/42D8SP_7_PIF1_3_dedup-mapped-reads.bam,PIF1d,untreated,2
+PIF1d_PDS_r2,/Users/spencergray/Desktop/G4-RNA-seq/42D8SP_bam/42D8SP_8_PIF1_PDS_3_dedup-mapped-reads.bam,PIF1d,PDS,2
+RecQd_unt_r1,/Users/spencergray/Desktop/G4-RNA-seq/42D8SP_bam/42D8SP_9_RecQ_2_dedup-mapped-reads.bam,RecQd,untreated,1
+RecQd_PDS_r1,/Users/spencergray/Desktop/G4-RNA-seq/42D8SP_bam/42D8SP_10_RecQ_PDS_2_dedup-mapped-reads.bam,RecQd,PDS,1
+RecQd_unt_r2,/Users/spencergray/Desktop/G4-RNA-seq/42D8SP_bam/42D8SP_11_RecQ_3_dedup-mapped-reads.bam,RecQd,untreated,2
+RecQd_PDS_r2,/Users/spencergray/Desktop/G4-RNA-seq/42D8SP_bam/42D8SP_12_RecQ_PDS_3_dedup-mapped-reads.bam,RecQd,PDS,2
