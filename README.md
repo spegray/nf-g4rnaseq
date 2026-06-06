@@ -2,6 +2,14 @@
 
 **A configurable Nextflow pipeline for RNA-seq differential expression integrated with G-quadruplex (G4) and co-transcriptional RNA:DNA hybrid-G4 (PHQS) analysis.**
 
+[![CI](https://github.com/OWNER/nf-g4rnaseq/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/nf-g4rnaseq/actions/workflows/ci.yml)
+[![Docker test](https://github.com/OWNER/nf-g4rnaseq/actions/workflows/docker-test.yml/badge.svg)](https://github.com/OWNER/nf-g4rnaseq/actions/workflows/docker-test.yml)
+[![Container](https://github.com/OWNER/nf-g4rnaseq/actions/workflows/build-container.yml/badge.svg)](https://github.com/OWNER/nf-g4rnaseq/actions/workflows/build-container.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A523.04-23aa62.svg)](https://www.nextflow.io/)
+
+> Replace `OWNER` in the badge links with your GitHub username/org after publishing. The **Docker test** badge stays green and skips until you publish the image (push a `v*` tag); after that it runs `-profile test,docker` end-to-end on each image build.
+
 Built to answer questions of the form: *does a treatment and/or a genetic background change transcription, and is that change linked to G-quadruplexes (canonical DNA G4s and/or co-transcriptional hybrid G4s)?* You supply a **sample sheet** (samples, replicates, and any experimental factors such as genotype/treatment), a **contrasts sheet**, and a reference; the pipeline produces differential expression, a genome-wide G4 map, a hybrid-G4 (PHQS) map, G4↔DE enrichment, GO/KEGG, threshold-free GSEA (including the genotype×treatment interaction), an integrated per-gene table, and a summary report.
 
 > Origin: generalised from a study of Pyridostatin and the RecQ/PIF1-family G4-resolving helicases in *S. cerevisiae*. The defaults reproduce that study; every organism/design-specific choice is now a parameter.
