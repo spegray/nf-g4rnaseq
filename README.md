@@ -53,9 +53,15 @@ nextflow run . -profile test_full,docker --outdir results
 
 Full parameter list: [`docs/parameters.md`](docs/parameters.md) · usage details: [`docs/usage.md`](docs/usage.md) · outputs: [`docs/output.md`](docs/output.md).
 
-## Reproducibility
+## Reproducibility & the container
 
-`-profile docker` / `-profile singularity` (standard tools via biocontainers; the R analysis via the image built from `containers/Dockerfile`) or `-profile conda` (`containers/environment.yml`). Pin versions on release.
+`-profile docker` / `-profile singularity` (standard tools via biocontainers; the R analysis via one image) or `-profile conda` (`containers/environment.yml`, no image needed — also what CI uses).
+
+The analysis image is **built and pushed automatically by GitHub Actions** when you push a version tag — no local Docker required:
+```bash
+git tag v0.1.0 && git push origin v0.1.0      # -> ghcr.io/<owner>/nf-g4rnaseq-r:0.1.0
+```
+Then make the GHCR package public and set `params.r_container` (or pass `--r_container`). The environment is verified to solve on linux-64, so the build is reliable. See [`containers/README.md`](containers/README.md).
 
 ## Citation
 
