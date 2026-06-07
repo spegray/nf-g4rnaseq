@@ -67,7 +67,20 @@ nextflow run . -profile test,docker
 Resume after an interruption with `-resume`. Tune resources via `--max_cpus`,
 `--max_memory`. Skip stages with `--skip_g4 --skip_hybrid --skip_go --skip_gsea --skip_report`.
 
-## UMI libraries (FASTQ entry)
-The FASTQ path runs fastp → STAR → featureCounts. For UMI-based libraries,
-insert `umi_tools extract` (before STAR) and `umi_tools dedup` (after); the
-`umi_tools` tool is already in the environment. See `modules/local/align.nf`.
+## Other options
+- `--umi` (+ `--umi_pattern`): FASTQ path only — run `umi_tools extract` (before
+  STAR) and `umi_tools dedup` (after) for UMI libraries. Set `--umi_pattern` to
+  your barcode layout (e.g. `NNNNNNNNNNNN`). Off by default.
+- `--exclude_dubious`: drop Dubious-ORF genes (from `gene_info` `orf_class`)
+  before differential expression (yeast has many overlapping dubious ORFs).
+- `--strandedness auto|0|1|2`: `auto` probes `-s 0/1/2` on one BAM and prints all
+  three assignment counts; if they are close, set the value explicitly (or
+  pre-check with RSeQC `infer_experiment`).
+- `--skip_multiqc`, `--skip_g4`, `--skip_hybrid`, `--skip_go`, `--skip_gsea`,
+  `--skip_report`: turn off individual stages.
+
+## QC, provenance & STAR note
+`results/multiqc/` aggregates featureCounts/STAR/fastp logs (bam/fastq entries);
+`results/pipeline_info/software_versions.yml` records tool + R-package versions.
+STAR is Linux-first — run the FASTQ path on Linux or in the container (the conda
+macOS-arm64 STAR build can silently read 0 reads).

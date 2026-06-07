@@ -4,7 +4,26 @@ All notable changes to **nf-g4rnaseq** are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versioning follows [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [Unreleased] — peer-review hardening
+### Fixed
+- **Sample labeling**: count columns are now labeled via a sorted `[sample,bam]`
+  tuple list (not two independent `.collect()`s), removing a silent mislabel risk;
+  added a column-count assertion.
+- **Gene-set statistics**: replaced size-inflated fgsea on the large G4 gene sets
+  with `limma::cameraPR` (competitive, correlation-aware, calibrated for any set
+  size); added Benjamini-Hochberg correction across the G4↔DE Fisher family.
+- **FASTQ portability**: STAR now reads decompressed FASTQ (the `--readFilesCommand`
+  spawn fails on some platforms).
+### Added
+- MultiQC QC aggregation; `software_versions.yml` provenance; optional UMI handling
+  (`--umi`/`--umi_pattern`); `--exclude_dubious` gene-model option; a low-replication
+  (<3/group) warning; strandedness-probe transparency; `test_bam`/`test_fastq`
+  profiles with a bundled tiny FASTQ dataset.
+### Validated
+- BAM entry end-to-end on real BAMs (auto strandedness = 1; reproduced DEG counts;
+  HXT13 labeling spike correct). Contrast engine confirmed on a 1-factor/3-level
+  design (generality). FASTQ wiring validated locally except STAR's macOS build;
+  exercised on the Linux CI runner.
 
 ## [0.1.0] - 2026-06-06
 First release — a configurable Nextflow (DSL2) pipeline generalised from a study

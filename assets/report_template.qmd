@@ -57,8 +57,11 @@ if (dir.exists("g4") && ex("g4/g4_sites.tsv")) {
   cat(sprintf("- canonical-strength (≥3 tetrads): %d; two-quartet: %d; high-confidence (score≥47): %d.\n\n",
               sum(g$n_tetrads>=3), sum(g$n_tetrads==2), sum(g$score>=47)))
   f <- rd("g4/gene_g4_features.tsv")
-  if (!is.null(f)) cat(sprintf("- **%.1f%%** of genes have a proximal G4 (any); **%.1f%%** high-confidence.\n\n",
-                               100*mean(f$has_g4), 100*mean(f$has_g4_highconf)))
+  if (!is.null(f)) {
+    cat(sprintf("- **%.1f%%** of genes have a proximal G4 (any, permissive); **%.1f%%** high-confidence.\n\n",
+                100*mean(f$has_g4), 100*mean(f$has_g4_highconf)))
+    cat("> Permissive G4 calls cover most genes and have low specificity — base any enrichment *claim* on the high-confidence subset.\n\n")
+  }
 }
 ```
 
@@ -72,7 +75,7 @@ if (!is.na(hf)) {
               "2", 100*mean(h$hybrid_capable), 100*mean(h$hybrid_specific)))
   hs <- head(h[hybrid_specific==TRUE][order(sense_G_frac)][, intersect(c("std_name","biotype","sense_G_frac","sense_G3_tracts"), names(h)), with=FALSE], 8)
   if (nrow(hs)) print(kable(hs, caption="Lowest-guanine hybrid-specific genes"))
-  cat("\n\n")
+  cat("\n> Hybrid-G4 potential is a *sequence prediction* (not an in-vivo measurement) and scales with gene length; treat expression associations as length-confounded and hypothesis-generating, to be confirmed orthogonally (e.g. BG4/DRIP).\n\n")
 }
 ```
 
@@ -121,4 +124,4 @@ if (ex("integrate/master_gene_table.tsv")) {
 
 # Methods & caveats
 
-Reads were quantified per gene (featureCounts; strandedness auto-detected) and modelled with **DESeq2** using the configured design; fold-changes are shrunken (apeglm/ashr). G4s were predicted with **pqsfinder** (both strands); the RNA:DNA hybrid-G4 (PHQS) scan counts clustered coding-strand G-tracts. Functional enrichment used **clusterProfiler** (GO/KEGG) and **fgsea** (GSEA, including the genotype×treatment interaction). Interpret with attention to: replication/power (GSEA is more robust than per-gene tests at low n), the low specificity of permissive G4 calling (prefer the high-confidence subset), and any confounded design factors (flag via `--flag_genes`). Full tool versions and citations: `CITATIONS.md`.
+Reads were quantified per gene (featureCounts; strandedness auto-detected) and modelled with **DESeq2** using the configured design; fold-changes are shrunken (apeglm/ashr). G4s were predicted with **pqsfinder** (both strands); the RNA:DNA hybrid-G4 (PHQS) scan counts clustered coding-strand G-tracts. Functional enrichment used **clusterProfiler** (GO/KEGG over-representation + GO-set GSEA). For the large G4 gene sets we use **limma::cameraPR** — a competitive, correlation-aware test calibrated for any set size — rather than fgsea, whose p-values inflate with set size. G4↔DE Fisher tests are **BH-corrected** across the family. Interpret with attention to: replication/power (the pipeline warns at <3 replicates per group; gene-set tests are more robust than per-gene tests at low n), the low specificity of permissive G4 calling (prefer the high-confidence subset), the predictive/length-confounded nature of the hybrid-G4 calls, and any confounded design factors (flag via `--flag_genes`). Full tool versions and citations: `CITATIONS.md`.

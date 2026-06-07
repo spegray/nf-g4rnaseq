@@ -17,13 +17,16 @@ process FEATURECOUNTS {
       """
       S=${params.strandedness}
       if [ "\$S" = "auto" ]; then
-        best=0; bestn=-1
+        best=0; bestn=-1; rates=""
         for s in 0 1 2; do
           featureCounts -F SAF -a ${saf} -s \$s -T ${task.cpus} -o probe_\$s.txt \$(echo ${bams} | tr ' ' '\\n' | head -1) >/dev/null 2>&1 || true
           n=\$(awk '\$1=="Assigned"{print \$2}' probe_\$s.txt.summary 2>/dev/null || echo 0)
+          rates="\$rates s\$s=\$n"
           if [ "\$n" -gt "\$bestn" ]; then bestn=\$n; best=\$s; fi
         done; S=\$best
-        echo ">>> auto-detected strandedness: -s \$S"
+        # Transparency: print all three assignment counts so the choice is auditable.
+        echo ">>> strandedness probe (Assigned reads, first BAM):\$rates -> chose -s \$S"
+        echo ">>> (if those counts are close, set --strandedness 0|1|2 explicitly; or pre-check with RSeQC infer_experiment)"
       fi
       featureCounts -F SAF -a ${saf} -s \$S -T ${task.cpus} -o gene_counts.txt ${bams}
       Rscript -e 'library(data.table); fc<-fread("gene_counts.txt",skip=1); m<-fc[,c(1,7:ncol(fc)),with=FALSE]; nm<-strsplit("${names}",",")[[1]]; stopifnot((ncol(fc)-6)==length(nm)); setnames(m, c("gene_id", nm)); fwrite(m,"counts.tsv",sep="\\t")'

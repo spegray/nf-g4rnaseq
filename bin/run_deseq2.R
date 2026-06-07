@@ -27,6 +27,7 @@ opt <- parse_args(OptionParser(option_list = list(
   make_option("--flag_genes",  type="character", default=NULL, help="optional CSV: gene_id,category (genes to flag, e.g. mating-type/construction)"),
   make_option("--min_count",   type="integer",   default=10L, help="drop genes with < this many total reads"),
   make_option("--padj",        type="double",    default=0.05, help="adjusted-p significance threshold"),
+  make_option("--exclude_dubious", action="store_true", default=FALSE, help="drop Dubious-ORF genes (gene_info orf_class) before DE"),
   make_option("--outdir",      type="character", default=".", help="output directory")
 )))
 dir.create(opt$outdir, showWarnings=FALSE, recursive=TRUE)
@@ -53,11 +54,22 @@ for (f in fct) {
   if (!is.null(refs[[f]])) cd[[f]] <- relevel(cd[[f]], ref = refs[[f]])
 }
 rownames(cd) <- cd$sample
+# Low-replication guard: warn if any biological group is under-replicated.
+grp_factors <- setdiff(fct, c("replicate","rep","batch"))
+if (length(grp_factors)) {
+  cells <- table(do.call(interaction, c(cd[grp_factors], list(drop=TRUE))))
+  if (min(cells) < 3) warning(sprintf("LOW REPLICATION: smallest group has %d sample(s) (<3). DESeq2 runs, but dispersion estimates and power are limited; treat per-gene calls cautiously and prefer the gene-set/threshold-free results.", min(cells)))
+}
 
 # optional gene annotation + flags
 gi <- if (!is.null(opt$gene_info) && file.exists(opt$gene_info)) fread(opt$gene_info) else data.table(gene_id=gene_ids)
 flags <- if (!is.null(opt$flag_genes) && file.exists(opt$flag_genes)) fread(opt$flag_genes) else data.table(gene_id=character(), category=character())
 
+if (opt$exclude_dubious && "orf_class" %in% names(gi)) {
+  dub <- gi[orf_class == "Dubious"]$gene_id
+  counts <- counts[!rownames(counts) %in% dub, , drop = FALSE]
+  cat(sprintf(">>> --exclude_dubious: dropped %d Dubious-ORF genes\n", sum(gene_ids %in% dub)))
+}
 cat(sprintf(">>> %d genes x %d samples; design %s\n", nrow(counts), ncol(counts), opt$design))
 
 # ---- fit -------------------------------------------------------------------

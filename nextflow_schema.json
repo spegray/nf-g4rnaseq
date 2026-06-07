@@ -56,7 +56,11 @@
         "skip_hybrid": { "type": "boolean", "default": false },
         "skip_go":     { "type": "boolean", "default": false },
         "skip_gsea":   { "type": "boolean", "default": false },
-        "skip_report": { "type": "boolean", "default": false }
+        "skip_report": { "type": "boolean", "default": false },
+        "skip_multiqc":{ "type": "boolean", "default": false },
+        "exclude_dubious": { "type": "boolean", "default": false, "description": "Drop Dubious-ORF genes (gene_info orf_class) before DE" },
+        "umi":         { "type": "boolean", "default": false, "description": "FASTQ path: run umi_tools extract + dedup" },
+        "umi_pattern": { "type": "string", "default": "NNNNNNNNNNNN", "description": "UMI barcode pattern for umi_tools (set per library)" }
       }
     }
   },

@@ -8,9 +8,11 @@
 | `g4/g4_sites.{tsv,bed}` | every predicted G4: position, strand, pqsfinder score, #tetrads (≥3 = canonical, 2 = two-quartet), bulges/mismatches. BED opens in IGV |
 | `g4/gene_g4_features.tsv` | per-gene proximal-G4 counts (promoter+body), split by coding vs template strand and by stringency (all / canonical / high-confidence) |
 | `g4/gene_hybrid_g4.tsv` | per-gene RNA:DNA hybrid-G4 (PHQS) scan: coding-strand G-tract clusters; `hybrid_capable` (≥2 tracts) and `hybrid_specific` (2–3 tracts → forms a G4 only co-transcriptionally) |
-| `g4/g4_deg_enrichment.csv` | Fisher tests: are DEGs (all/up/down, per contrast) enriched for proximal/hybrid G4s? (with an optional ribosome-excluded robustness set) |
+| `g4/g4_deg_enrichment.csv` | Fisher tests: are DEGs (all/up/down, per contrast) enriched for proximal/hybrid G4s? Includes a `padj` column (**BH across the whole test family** — interpret `padj`, not raw `p`) and an optional ribosome-excluded robustness set |
 | `go/` | GO (BP/MF/CC) and KEGG over-representation per contrast (up & down), with dotplots — only if `--orgdb` given |
-| `gsea/` | threshold-free GSEA per contrast: `gseGO_*.csv` (GO sets) and `gseaG4_*.csv` (custom G4 gene sets); `figures/G4_GSEA_NES_byContrast.png`. Works on simple, pairwise AND interaction contrasts (NES<0 = the set is coordinately down-regulated) |
+| `gsea/` | gene-set analysis per contrast (simple/pairwise/interaction): `gseGO_*.csv` (focused GO sets, fgsea) and `g4_geneset_camera_*.csv` (large G4 sets via **limma::cameraPR**, a competitive correlation-aware test calibrated for any set size — `median_stat<0` = set down-regulated, `padj` = BH-FDR); `figures/G4_geneset_camera_byContrast.png` |
+| `multiqc/` | aggregated read/alignment QC (featureCounts/STAR/fastp logs) — bam/fastq entries |
+| `pipeline_info/software_versions.yml` | tool + R-package versions used in the run (provenance) |
 | `integrate/master_gene_table.tsv` | one row per gene: expression, per-contrast log2FC+padj, proximal-G4 features, hybrid-G4 class, flags — the integrated backbone |
 | `report/report.html` | the full **Quarto** report (narrative + tables + embedded figures); rendered where Quarto is available (bundled in the container) |
 | `report/summary_report.md` | dependency-free Markdown summary, always produced (and the fallback if Quarto is unavailable) |
