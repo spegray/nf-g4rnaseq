@@ -1,6 +1,8 @@
 // FASTQ entry path: QC/trim -> STAR align -> index. (UMI handling via umi_tools
 // can be inserted between FASTP and STAR for UMI libraries; see docs/usage.md.)
 // These use standard biocontainers and run under -profile docker/singularity.
+// NOTE: STAR is a Linux-first tool; run the FASTQ path on Linux / in the
+// container (the conda macOS-arm64 STAR build can silently read 0 input reads).
 
 process FASTP {
     label 'process_medium'
@@ -42,7 +44,16 @@ process STAR_ALIGN {
             path "${sample}.Log.final.out", emit: log
     script:
       """
-      STAR --genomeDir ${index} --readFilesIn ${reads} --readFilesCommand zcat --runThreadN ${task.cpus} \\
+      # Decompress first and feed plain FASTQ. STAR's --readFilesCommand fails to
+      # spawn on some platforms (e.g. macOS); decompressing is portable everywhere.
+      R=""
+      for f in ${reads}; do
+        case "\$f" in
+          *.gz) b=\$(basename "\$f" .gz); gunzip -c "\$f" > "\$b"; R="\$R \$b" ;;
+          *)    R="\$R \$f" ;;
+        esac
+      done
+      STAR --genomeDir ${index} --readFilesIn \$R --runThreadN ${task.cpus} \\
            --outSAMtype BAM SortedByCoordinate --outFileNamePrefix ${sample}. \\
            --outFilterIntronMotifs RemoveNoncanonical --outSAMattributes NH HI AS nM
       """

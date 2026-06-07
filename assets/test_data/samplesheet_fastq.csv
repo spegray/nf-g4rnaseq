@@ -1,0 +1,5 @@
+sample,fastq_1,genotype,replicate
+WT_unt_r1,assets/test_data/fq/WT_unt_r1.fastq.gz,WT,1
+WT_unt_r2,assets/test_data/fq/WT_unt_r2.fastq.gz,WT,2
+PIF1d_unt_r1,assets/test_data/fq/PIF1d_unt_r1.fastq.gz,PIF1d,1
+PIF1d_unt_r2,assets/test_data/fq/PIF1d_unt_r2.fastq.gz,PIF1d,2

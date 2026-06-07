@@ -31,9 +31,12 @@ jobs:
         with:
           environment-file: containers/environment.yml
           cache-environment: true
-      - name: Run pipeline on the downsampled test data
+      - name: Counts entry (downsampled chr-I)
         shell: bash -el {0}     # activates the micromamba env (tools on PATH)
         run: nextflow run . -profile test --outdir results
+      - name: FASTQ entry (chr-I reads; fastp -> STAR -> featureCounts -> DE)
+        shell: bash -el {0}     # STAR runs on the Linux runner (macOS builds are flaky)
+        run: nextflow run . -profile test_fastq --outdir results_fastq
       # Faster equivalent once the analysis image is built & pushed
       # (containers/Dockerfile) and params.r_container is set:
       #   nextflow run . -profile test,docker --outdir results

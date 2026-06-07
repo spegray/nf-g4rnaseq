@@ -1,0 +1,2 @@
+id,type,factor,target,reference,within
+PIF1d_vs_WT,pairwise,genotype,PIF1d,WT,
