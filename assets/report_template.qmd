@@ -101,12 +101,14 @@ if (dir.exists("go")) {
 
 ```{r gsea, results='asis'}
 if (dir.exists("gsea")) {
-  cat("# GSEA (threshold-free)\n\n")
-  gs <- list.files("gsea", pattern="^gseaG4_.*csv$")
+  cat("# Gene-set analysis\n\n")
+  gs <- list.files("gsea", pattern="^g4_geneset_camera_.*csv$")
+  if (length(gs)) cat("**G4 gene sets** — competitive, correlation-aware test (`limma::cameraPR`; BH-FDR). A negative median statistic = the set is down-regulated in that contrast:\n\n")
   for (gf in gs) { d <- rd(file.path("gsea", gf)); if (!is.null(d))
-    cat(sprintf("- **%s** (G4 sets): %s\n", sub("gseaG4_|\\.csv","",gf),
-        paste(sprintf("%s NES=%.2f (padj %.2g)", d$ID, d$NES, d$p.adjust), collapse="; "))) }
-  cat("\n\n"); img("gsea/figures/G4_GSEA_NES_byContrast.png", "G4 gene-set GSEA across contrasts (NES<0 = down-regulated)")
+    cat(sprintf("- **%s**: %s\n", sub("g4_geneset_camera_|\\.csv","",gf),
+        paste(sprintf("%s %s (median stat %.2f, FDR %.2g)", d$ID, d$Direction, d$median_stat, d$padj), collapse="; "))) }
+  cat("\n\n"); img("gsea/figures/G4_geneset_camera_byContrast.png", "G4 gene sets across contrasts (median Wald statistic; cameraPR BH-FDR stars)")
+  if (length(list.files("gsea", pattern="^gseGO_"))) cat("\nGO biological-process GSEA (focused sets, fgsea) tables: `gsea/gseGO_*.csv`.\n\n")
 }
 ```
 

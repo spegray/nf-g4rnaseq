@@ -66,7 +66,12 @@ enr <- rbindlist(res, fill=TRUE)
 if (nrow(enr) == 0) {                       # no contrast had >=10 non-confounded DEGs
   enr <- data.table(contrast=character(), set=character(), direction=character(),
                     flag=character(), pct_deg=numeric(), pct_bg=numeric(),
-                    odds_ratio=numeric(), p=numeric(), n_deg=integer())
+                    odds_ratio=numeric(), p=numeric(), padj=numeric(), n_deg=integer())
+} else {
+  # Benjamini-Hochberg across the whole family of Fisher tests reported here
+  # (contrast x set x direction x G4-flag). Interpret `padj`, not raw `p`.
+  enr[, padj := signif(p.adjust(p, method="BH"), 3)]
+  setcolorder(enr, c("contrast","set","direction","flag","pct_deg","pct_bg","odds_ratio","p","padj","n_deg"))
 }
 fwrite(enr, file.path(opt$outdir,"g4_deg_enrichment.csv"))
 cat(">>> g4_deg_enrichment.csv:", nrow(enr), "rows.\n")

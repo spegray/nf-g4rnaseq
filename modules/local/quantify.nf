@@ -26,6 +26,6 @@ process FEATURECOUNTS {
         echo ">>> auto-detected strandedness: -s \$S"
       fi
       featureCounts -F SAF -a ${saf} -s \$S -T ${task.cpus} -o gene_counts.txt ${bams}
-      Rscript -e 'library(data.table); fc<-fread("gene_counts.txt",skip=1); m<-fc[,c(1,7:ncol(fc)),with=FALSE]; setnames(m, c("gene_id", strsplit("${names}",",")[[1]])); fwrite(m,"counts.tsv",sep="\\t")'
+      Rscript -e 'library(data.table); fc<-fread("gene_counts.txt",skip=1); m<-fc[,c(1,7:ncol(fc)),with=FALSE]; nm<-strsplit("${names}",",")[[1]]; stopifnot((ncol(fc)-6)==length(nm)); setnames(m, c("gene_id", nm)); fwrite(m,"counts.tsv",sep="\\t")'
       """
 }

@@ -30,10 +30,10 @@ if (!is.null(opt$hybrid_dir)) {
       100*mean(h$hybrid_capable), 100*mean(h$hybrid_specific))) }
 }
 if (!is.null(opt$gsea_dir) && dir.exists(opt$gsea_dir)) {
-  gf <- list.files(opt$gsea_dir, pattern="^gseaG4_.*csv$", full.names=TRUE)
-  if (length(gf)) { add("## G4 gene-set GSEA (NES; <0 = down-regulated by the contrast)", "")
-    for (x in gf) { d <- fread(x); add(paste0("**", sub("gseaG4_|\\.csv","",basename(x)), "**: ",
-        paste(sprintf("%s NES=%.2f (padj %.2g)", d$ID, d$NES, d$p.adjust), collapse="; ")), "") } }
+  gf <- list.files(opt$gsea_dir, pattern="^g4_geneset_camera_.*csv$", full.names=TRUE)
+  if (length(gf)) { add("## G4 gene sets (cameraPR, correlation-aware; median stat <0 = down)", "")
+    for (x in gf) { d <- fread(x); add(paste0("**", sub("g4_geneset_camera_|\\.csv","",basename(x)), "**: ",
+        paste(sprintf("%s %s (med %.2f, FDR %.2g)", d$ID, d$Direction, d$median_stat, d$padj), collapse="; ")), "") } }
 }
 if (!is.null(opt$integrate_dir)) {
   f <- file.path(opt$integrate_dir, "master_gene_table.tsv")

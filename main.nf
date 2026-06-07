@@ -48,8 +48,13 @@ workflow {
         if (!params.count_matrix) error "step=counts requires --count_matrix"
         counts = file(params.count_matrix)
     } else if (step == 'bam') {
-        bam_ch  = Channel.fromPath(params.input).splitCsv(header:true).map { tuple(it.sample, file(it.bam)) }
-        FEATURECOUNTS(bam_ch.map{it[1]}.collect(), bam_ch.map{it[0]}.collect(), saf)
+        // Pair [sample, bam] and sort ONCE, then derive the bam list and the name
+        // list from that same ordered structure, so featureCounts columns are
+        // always labeled with the correct sample (no independent-collect order drift).
+        ordered = Channel.fromPath(params.input).splitCsv(header:true)
+                    .map { tuple(it.sample, file(it.bam)) }
+                    .toSortedList { a, b -> a[0] <=> b[0] }
+        FEATURECOUNTS(ordered.map{ it.collect{ t -> t[1] } }, ordered.map{ it.collect{ t -> t[0] } }, saf)
         counts = FEATURECOUNTS.out.counts
     } else { // fastq
         reads = Channel.fromPath(params.input).splitCsv(header:true)
@@ -58,8 +63,8 @@ workflow {
         STAR_INDEX(genome)
         STAR_ALIGN(FASTP.out.reads, STAR_INDEX.out.index.first())
         SAMTOOLS_INDEX(STAR_ALIGN.out.bam)
-        b = SAMTOOLS_INDEX.out.bam
-        FEATURECOUNTS(b.map{it[1]}.collect(), b.map{it[0]}.collect(), saf)
+        ordered = SAMTOOLS_INDEX.out.bam.toSortedList { a, b -> a[0] <=> b[0] }
+        FEATURECOUNTS(ordered.map{ it.collect{ t -> t[1] } }, ordered.map{ it.collect{ t -> t[0] } }, saf)
         counts = FEATURECOUNTS.out.counts
     }
 

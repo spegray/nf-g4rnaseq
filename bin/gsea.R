@@ -8,7 +8,7 @@
 #       coding-strand) -> does the contrast coordinately shift G4-bearing genes?
 # Plus a summary NES bar chart of the G4 sets across contrasts.
 # =============================================================================
-suppressPackageStartupMessages({ library(optparse); library(clusterProfiler); library(ggplot2); library(data.table) })
+suppressPackageStartupMessages({ library(optparse); library(clusterProfiler); library(limma); library(ggplot2); library(data.table) })
 opt <- parse_args(OptionParser(option_list=list(
   make_option("--deseq2_dir",  type="character"),
   make_option("--g4_features", type="character"),
@@ -36,19 +36,36 @@ for (cn in names(rl)) {
     if (!is.null(eg) && nrow(as.data.frame(eg))>0) fwrite(as.data.frame(eg)[,c("ID","Description","setSize","NES","pvalue","p.adjust")],
                                                           file.path(opt$outdir, sprintf("gseGO_%s.csv",cn)))
   }
-  cg <- tryCatch(GSEA(gl, TERM2GENE=t2g, minGSSize=10, maxGSSize=6000, pvalueCutoff=1.1, eps=0, verbose=FALSE), error=function(e) NULL)
-  if (!is.null(cg) && nrow(as.data.frame(cg))>0) {
-    x <- as.data.frame(cg); fwrite(x[,c("ID","setSize","NES","pvalue","p.adjust")], file.path(opt$outdir, sprintf("gseaG4_%s.csv",cn)))
-    g4collect[[cn]] <- data.table(contrast=cn, ID=x$ID, NES=x$NES, p.adjust=x$p.adjust)
-    cat(sprintf(">>> %-26s G4-set GSEA: %s\n", cn, paste(sprintf("%s=%+.2f(p%.1g)", x$ID, x$NES, x$p.adjust), collapse="  ")))
+  # G4 gene sets are large (often thousands of genes), where fgsea's NES/p are
+  # inflated by set size and ignore inter-gene correlation. Use limma::cameraPR
+  # instead: a COMPETITIVE, correlation-aware test on the ranked statistic,
+  # calibrated for any set size (inter.gene.cor=0.01 is the recommended robust
+  # default; use.ranks=TRUE = non-parametric). Reports Direction + BH-FDR; we add
+  # the median in-set statistic as an interpretable effect size.
+  idx <- lapply(split(t2g$gene, t2g$term), function(s) which(names(gl) %in% s))
+  idx <- idx[sapply(idx, length) >= 10]
+  if (length(idx)) {
+    cam <- limma::cameraPR(gl, idx, use.ranks=TRUE, inter.gene.cor=0.01)
+    cam$set <- rownames(cam)
+    cam$median_stat <- sapply(cam$set, function(s) round(median(gl[idx[[s]]]), 3))
+    out <- as.data.table(cam)[, .(ID=set, NGenes, Direction, median_stat,
+                                  p=signif(PValue,3), padj=signif(FDR,3))]
+    fwrite(out, file.path(opt$outdir, sprintf("g4_geneset_camera_%s.csv",cn)))
+    g4collect[[cn]] <- cbind(contrast=cn, out[, .(ID, median_stat, Direction, padj)])
+    cat(sprintf(">>> %-26s G4 cameraPR: %s\n", cn,
+        paste(sprintf("%s %s(med=%.2f,padj=%.2g)", out$ID, out$Direction, out$median_stat, out$padj), collapse="  ")))
   }
 }
 if (length(g4collect)) {
-  all <- rbindlist(g4collect); all[, sig := ifelse(p.adjust<0.001,"***",ifelse(p.adjust<0.01,"**",ifelse(p.adjust<0.05,"*","")))]
-  ggplot(all, aes(ID, NES, fill=NES)) + geom_col() + geom_text(aes(label=sig, vjust=ifelse(NES<0,1.2,-0.4))) +
+  all <- rbindlist(g4collect); all[, sig := ifelse(padj<0.001,"***",ifelse(padj<0.01,"**",ifelse(padj<0.05,"*","")))]
+  ggplot(all, aes(ID, median_stat, fill=median_stat)) + geom_col() +
+    geom_text(aes(label=sig, vjust=ifelse(median_stat<0,1.2,-0.4))) +
     scale_fill_gradient2(low="firebrick", mid="grey90", high="steelblue", midpoint=0) +
-    facet_wrap(~contrast) + coord_flip() + labs(title="G4 gene-set GSEA across contrasts (NES<0 = down)", x=NULL) +
+    facet_wrap(~contrast) + coord_flip() +
+    labs(title="G4 gene sets: competitive test (limma::cameraPR, correlation-aware)",
+         subtitle="bar = median Wald stat in set (<0 = set down-regulated);  */**/*** = BH-FDR<0.05/0.01/0.001",
+         x=NULL, y="median Wald statistic in set") +
     theme_bw() + theme(legend.position="none")
-  ggsave(file.path(figdir,"G4_GSEA_NES_byContrast.png"), width=11, height=7, dpi=150)
+  ggsave(file.path(figdir,"G4_geneset_camera_byContrast.png"), width=11, height=7, dpi=150)
 }
 cat(">>> gsea complete.\n")
