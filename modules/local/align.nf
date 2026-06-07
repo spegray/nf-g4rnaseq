@@ -63,6 +63,33 @@ process SAMTOOLS_INDEX {
     label 'process_low'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
     input:  tuple val(sample), path(bam)
-    output: tuple val(sample), path(bam), emit: bam
+    output: tuple val(sample), path(bam), path("${bam}.bai"), emit: bam
     script: "samtools index ${bam}"
+}
+
+// Optional UMI handling (enable with --umi; set --umi_pattern for your library).
+process UMITOOLS_EXTRACT {
+    label 'process_medium'
+    container 'quay.io/biocontainers/umi_tools:1.1.5--py39hf95cd2a_0'
+    input:  tuple val(sample), path(reads)
+    output: tuple val(sample), path("${sample}.umi*.fastq.gz"), emit: reads
+    script:
+      if (reads instanceof List && reads.size() == 2)
+        """
+        umi_tools extract --bc-pattern=${params.umi_pattern} --bc-pattern2=${params.umi_pattern} \\
+          -I ${reads[0]} --read2-in=${reads[1]} \\
+          -S ${sample}.umi_1.fastq.gz --read2-out=${sample}.umi_2.fastq.gz
+        """
+      else
+        """
+        umi_tools extract --bc-pattern=${params.umi_pattern} -I ${reads} -S ${sample}.umi.fastq.gz
+        """
+}
+
+process UMITOOLS_DEDUP {
+    label 'process_medium'
+    container 'quay.io/biocontainers/umi_tools:1.1.5--py39hf95cd2a_0'
+    input:  tuple val(sample), path(bam), path(bai)
+    output: tuple val(sample), path("${sample}.dedup.bam"), emit: bam
+    script: "umi_tools dedup -I ${bam} -S ${sample}.dedup.bam"
 }

@@ -3,9 +3,10 @@ nextflow.enable.dsl = 2
 
 include { HARMONIZE }     from './modules/local/reference.nf'
 include { FEATURECOUNTS } from './modules/local/quantify.nf'
-include { FASTP; STAR_INDEX; STAR_ALIGN; SAMTOOLS_INDEX } from './modules/local/align.nf'
+include { FASTP; STAR_INDEX; STAR_ALIGN; SAMTOOLS_INDEX; UMITOOLS_EXTRACT; UMITOOLS_DEDUP } from './modules/local/align.nf'
 include { DESEQ2; PREDICT_G4; HYBRID_G4; G4_ENRICHMENT; GO_ENRICHMENT; GSEA; INTEGRATE } from './modules/local/analysis.nf'
 include { REPORT }        from './modules/local/report.nf'
+include { MULTIQC; VERSIONS } from './modules/local/qc.nf'
 
 workflow {
     if (!params.input)     error "Provide --input <samplesheet.csv>"
@@ -61,9 +62,18 @@ workflow {
                   .map { r -> tuple(r.sample, r.fastq_2 ? [file(r.fastq_1), file(r.fastq_2)] : [file(r.fastq_1)]) }
         FASTP(reads)
         STAR_INDEX(genome)
-        STAR_ALIGN(FASTP.out.reads, STAR_INDEX.out.index.first())
-        SAMTOOLS_INDEX(STAR_ALIGN.out.bam)
-        ordered = SAMTOOLS_INDEX.out.bam.toSortedList { a, b -> a[0] <=> b[0] }
+        if (params.umi) {                       // optional UMI extract -> align -> dedup
+            UMITOOLS_EXTRACT(FASTP.out.reads)
+            STAR_ALIGN(UMITOOLS_EXTRACT.out.reads, STAR_INDEX.out.index.first())
+            SAMTOOLS_INDEX(STAR_ALIGN.out.bam)
+            UMITOOLS_DEDUP(SAMTOOLS_INDEX.out.bam)
+            aln = UMITOOLS_DEDUP.out.bam
+        } else {
+            STAR_ALIGN(FASTP.out.reads, STAR_INDEX.out.index.first())
+            SAMTOOLS_INDEX(STAR_ALIGN.out.bam)
+            aln = SAMTOOLS_INDEX.out.bam.map { t -> tuple(t[0], t[1]) }   // drop the .bai
+        }
+        ordered = aln.toSortedList { a, b -> a[0] <=> b[0] }
         FEATURECOUNTS(ordered.map{ it.collect{ t -> t[1] } }, ordered.map{ it.collect{ t -> t[0] } }, saf)
         counts = FEATURECOUNTS.out.counts
     }
@@ -95,4 +105,13 @@ workflow {
     if (!params.skip_report)
         REPORT(deseq2, g4_dir, hybrid_dir, g4enrich_dir, go_dir, gsea_dir, INTEGRATE.out.dir.first(),
                file("${projectDir}/assets/report_template.qmd"))
+
+    // ---- provenance + read/alignment QC aggregation ----
+    VERSIONS()
+    if (!params.skip_multiqc) {
+        if (step == 'fastq')
+            MULTIQC( FASTP.out.json.mix(STAR_ALIGN.out.log).mix(FEATURECOUNTS.out.summary).collect() )
+        else if (step == 'bam')
+            MULTIQC( FEATURECOUNTS.out.summary.collect() )
+    }
 }
