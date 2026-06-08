@@ -1,0 +1,49 @@
+nextflow_process {
+
+    name "DESEQ2 — configurable contrasts engine"
+    script "modules/local/analysis.nf"
+    process "DESEQ2"
+
+    setup {
+        run("HARMONIZE") {
+            script "modules/local/reference.nf"
+            process {
+                """
+                input[0] = file("${projectDir}/assets/test_data/genome_chrI.fa.gz")
+                input[1] = file("${projectDir}/assets/test_data/annotation_chrI.gff3.gz")
+                input[2] = file("${projectDir}/assets/NO_BAM")
+                input[3] = file("${projectDir}/assets/NO_MAP")
+                """
+            }
+        }
+    }
+
+    test("runs the 2x3 design with simple/pairwise/interaction contrasts") {
+        when {
+            params {
+                design_formula   = "~ replicate + genotype * treatment"
+                reference_levels = "genotype=WT;treatment=untreated;replicate=1"
+                min_count = 10
+                padj = 0.05
+            }
+            process {
+                """
+                input[0] = file("${projectDir}/assets/test_data/counts_chrI.tsv")
+                input[1] = file("${projectDir}/assets/test_data/samplesheet_counts.csv")
+                input[2] = HARMONIZE.out.gene_info
+                input[3] = file("${projectDir}/assets/contrasts_example.csv")
+                input[4] = file("${projectDir}/assets/flag_genes_example.csv")
+                """
+            }
+        }
+        then {
+            assert process.success
+            def dir = process.out.dir.get(0)
+            assert path("${dir}/res_list.rds").exists()
+            def summ = path("${dir}/deg_summary.csv").readLines()
+            assert summ.any { it.startsWith("RecQd_vs_WT") }       // pairwise
+            assert summ.any { it.startsWith("PDS_in_WT") }          // simple effect
+            assert summ.any { it.startsWith("interaction_PIF1d") }  // interaction
+        }
+    }
+}

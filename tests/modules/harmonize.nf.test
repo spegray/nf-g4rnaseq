@@ -1,0 +1,30 @@
+nextflow_process {
+
+    name "HARMONIZE — reconcile genome + annotation seqnames"
+    script "modules/local/reference.nf"
+    process "HARMONIZE"
+
+    test("builds gene_info, SAF and indexed genome from chr-I inputs") {
+        when {
+            params { harmonize = "length" }
+            process {
+                """
+                input[0] = file("${projectDir}/assets/test_data/genome_chrI.fa.gz")
+                input[1] = file("${projectDir}/assets/test_data/annotation_chrI.gff3.gz")
+                input[2] = file("${projectDir}/assets/NO_BAM")
+                input[3] = file("${projectDir}/assets/NO_MAP")
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert path(process.out.gene_info.get(0)).exists()
+            assert path(process.out.saf.get(0)).exists()
+            assert path(process.out.fasta.get(0)).exists()
+            // gene_info header is well-formed and there are gene rows
+            def gi = path(process.out.gene_info.get(0)).readLines()
+            assert gi[0].startsWith("gene_id")
+            assert gi.size() > 1
+        }
+    }
+}

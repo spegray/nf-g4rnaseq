@@ -1,0 +1,39 @@
+nextflow_process {
+
+    name "PREDICT_G4 — pqsfinder G4 prediction + per-gene features"
+    script "modules/local/analysis.nf"
+    process "PREDICT_G4"
+
+    setup {
+        run("HARMONIZE") {
+            script "modules/local/reference.nf"
+            process {
+                """
+                input[0] = file("${projectDir}/assets/test_data/genome_chrI.fa.gz")
+                input[1] = file("${projectDir}/assets/test_data/annotation_chrI.gff3.gz")
+                input[2] = file("${projectDir}/assets/NO_BAM")
+                input[3] = file("${projectDir}/assets/NO_MAP")
+                """
+            }
+        }
+    }
+
+    test("predicts G4 sites and per-gene proximal-G4 features on chr I") {
+        when {
+            process {
+                """
+                input[0] = HARMONIZE.out.fasta
+                input[1] = HARMONIZE.out.gene_info
+                """
+            }
+        }
+        then {
+            assert process.success
+            def g4 = path("${process.out.dir.get(0)}/g4_sites.tsv")
+            def feat = path("${process.out.dir.get(0)}/gene_g4_features.tsv")
+            assert g4.exists() && feat.exists()
+            assert g4.readLines().size() > 1          // chr I yields G4 candidates
+            assert feat.readLines()[0].contains("has_g4_highconf")
+        }
+    }
+}

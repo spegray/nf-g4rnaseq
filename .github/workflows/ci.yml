@@ -18,8 +18,8 @@ jobs:
       - name: Nextflow preview (compile, no execution)
         run: nextflow run . -profile test -preview
 
-  test:
-    name: End-to-end (bundled chr I data)
+  nftest:
+    name: nf-test (bespoke modules + counts-entry pipeline)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,11 +31,38 @@ jobs:
         with:
           environment-file: containers/environment.yml
           cache-environment: true
-      - name: Counts entry (downsampled chr-I)
-        shell: bash -el {0}     # activates the micromamba env (tools on PATH)
-        run: nextflow run . -profile test --outdir results
-      - name: FASTQ entry (chr-I reads; fastp -> STAR -> featureCounts -> DE)
-        shell: bash -el {0}     # STAR runs on the Linux runner (macOS builds are flaky)
+      - name: Install nf-test
+        shell: bash -el {0}
+        run: |
+          curl -fsSL https://get.nf-test.com | bash
+          sudo mv nf-test /usr/local/bin/
+          nf-test version
+      - name: Run nf-test suite (HARMONIZE, PREDICT_G4, HYBRID_G4, DESEQ2, pipeline)
+        shell: bash -el {0}     # activates the micromamba env (R/samtools/featureCounts on PATH)
+        run: nf-test test --verbose
+      - name: Upload nf-test output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nf-test-output
+          path: .nf-test/
+          retention-days: 7
+
+  fastq:
+    name: End-to-end FASTQ entry (fastp -> STAR -> featureCounts -> DE)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "17" }
+      - uses: nf-core/setup-nextflow@v2
+        with: { version: "latest-stable" }
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: containers/environment.yml
+          cache-environment: true
+      - name: FASTQ entry (chr-I reads; STAR runs on the Linux runner)
+        shell: bash -el {0}     # macOS STAR builds are flaky; CI is the trusted FASTQ path
         run: nextflow run . -profile test_fastq --outdir results_fastq
       # Faster equivalent once the analysis image is built & pushed
       # (containers/Dockerfile) and params.r_container is set:

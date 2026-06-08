@@ -1,0 +1,39 @@
+nextflow_process {
+
+    name "HYBRID_G4 — RNA:DNA hybrid-G4 (PHQS) scan"
+    script "modules/local/analysis.nf"
+    process "HYBRID_G4"
+
+    setup {
+        run("HARMONIZE") {
+            script "modules/local/reference.nf"
+            process {
+                """
+                input[0] = file("${projectDir}/assets/test_data/genome_chrI.fa.gz")
+                input[1] = file("${projectDir}/assets/test_data/annotation_chrI.gff3.gz")
+                input[2] = file("${projectDir}/assets/NO_BAM")
+                input[3] = file("${projectDir}/assets/NO_MAP")
+                """
+            }
+        }
+    }
+
+    test("classifies hybrid-capable / hybrid-specific genes on chr I") {
+        when {
+            process {
+                """
+                input[0] = HARMONIZE.out.fasta
+                input[1] = HARMONIZE.out.gene_info
+                """
+            }
+        }
+        then {
+            assert process.success
+            def h = path("${process.out.dir.get(0)}/gene_hybrid_g4.tsv")
+            assert h.exists()
+            def hdr = h.readLines()[0]
+            assert hdr.contains("hybrid_capable") && hdr.contains("hybrid_specific")
+            assert h.readLines().size() > 1
+        }
+    }
+}

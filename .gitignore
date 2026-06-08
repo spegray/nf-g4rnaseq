@@ -6,6 +6,8 @@
 .nextflow/
 .nextflow.log*
 .devtest/
+.nf-test/
+.nf-test.log
 *.pyc
 __pycache__/
 .DS_Store

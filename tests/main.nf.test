@@ -1,0 +1,26 @@
+nextflow_pipeline {
+
+    name "Pipeline end-to-end (counts entry, chr-I bundled data)"
+    script "main.nf"
+
+    test("runs end-to-end and emits the core outputs") {
+        when {
+            params {
+                outdir = "$outputDir"   // other params come from -profile test
+            }
+        }
+        then {
+            assert workflow.success
+            // each major stage produced its key output
+            assert path("$outputDir/deseq2/deg_summary.csv").exists()
+            assert path("$outputDir/g4/g4_sites.tsv").exists()
+            assert path("$outputDir/g4/gene_g4_features.tsv").exists()
+            assert path("$outputDir/hybrid/gene_hybrid_g4.tsv").exists()
+            assert path("$outputDir/integrate/master_gene_table.tsv").exists()
+            assert path("$outputDir/pipeline_info/software_versions.yml").exists()
+            // the contrasts engine produced all requested per-contrast tables
+            assert path("$outputDir/deseq2/RecQd_vs_WT.csv").exists()
+            assert path("$outputDir/deseq2/interaction_PIF1d.csv").exists()
+        }
+    }
+}
