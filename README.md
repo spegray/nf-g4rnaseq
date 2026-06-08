@@ -53,7 +53,7 @@ nextflow run . -profile test_full,docker --outdir results
 
 ## Key inputs
 
-- **Sample sheet** (`--input`): one row per sample; a `sample` column plus your factor columns. See `assets/samplesheet_bam_example.csv`.
+- **Sample sheet** (`--input`): one row per sample; a `sample` column plus your factor columns. The `bam`/`fastq_1` paths may be absolute or relative to the launch dir. See `assets/samplesheet_bam_example.csv` (placeholder paths). The bundled `test_bam`/`test_full` regression profiles read `assets/samplesheet_bam_local.csv` — a gitignored copy with your real local paths; create it by copying the example and filling in the `bam` column.
 - **Contrasts** (`--contrasts`): `id,type,factor,target,reference,within` where `type` ∈ {`simple`, `pairwise`, `interaction`} — covers within-factor effects, between-level contrasts, and genotype×treatment interactions without editing code. See `assets/contrasts_example.csv`.
 - **Reference**: `--fasta` + `--gff`; seqnames are auto-reconciled (`--harmonize length|map|none`).
 - **Organism** (optional, enables GO/GSEA): `--orgdb` (Bioconductor OrgDb) + `--gene_id_keytype` (+ `--kegg_organism`).

@@ -8,6 +8,8 @@
 .devtest/
 .nf-test/
 .nf-test.log
+# machine-specific sample sheets with real local BAM/FASTQ paths
+assets/samplesheet_*_local.csv
 *.pyc
 __pycache__/
 .DS_Store
