@@ -1,4 +1,6 @@
-# nf-g4rnaseq
+# MERLIN · `nf-g4rnaseq`
+
+### **M**apping **E**xpression and **R**NA–G-quadruplex **L**inkages **I**n **N**extflow
 
 **A configurable Nextflow pipeline for RNA-seq differential expression integrated with G-quadruplex (G4) and co-transcriptional RNA:DNA hybrid-G4 (PHQS) analysis.**
 
