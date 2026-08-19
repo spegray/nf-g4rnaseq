@@ -7,9 +7,9 @@ type: software
 authors:
   - given-names: Spencer
     family-names: Gray
-    # orcid: "https://orcid.org/0000-0000-0000-0000"   # add your ORCID
-repository-code: "https://github.com/OWNER/nf-g4rnaseq"
-url: "https://github.com/OWNER/nf-g4rnaseq"
+    orcid: "https://orcid.org/0000-0002-4807-0572"
+repository-code: "https://github.com/spegray/nf-g4rnaseq"
+url: "https://github.com/spegray/nf-g4rnaseq"
 abstract: >-
   A configurable Nextflow (DSL2) pipeline for RNA-seq differential expression
   integrated with G-quadruplex (G4) prediction and co-transcriptional RNA:DNA

@@ -5,7 +5,7 @@
   "access_right": "open",
   "license": "MIT",
   "creators": [
-    { "name": "Gray, Spencer" }
+    { "name": "Gray, Spencer", "orcid": "0000-0002-4807-0572" }
   ],
   "keywords": [
     "RNA-seq",
