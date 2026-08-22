@@ -1,6 +1,6 @@
 # Container image for nf-g4rnaseq (R analysis stack + tools).
 # Build (linux/amd64 = nf-core / HPC / cloud default):
-#   docker buildx build --platform linux/amd64 -t ghcr.io/OWNER/nf-g4rnaseq-r:0.1.0 \
+#   docker buildx build --platform linux/amd64 -t ghcr.io/spegray/nf-g4rnaseq-r:0.1.0 \
 #       -f containers/Dockerfile containers/
 # Then set params.r_container (nextflow.config) to the pushed tag/digest.
 #

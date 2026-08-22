@@ -59,5 +59,5 @@ of Pyridostatin and the RecQ/PIF1-family G4-resolving helicases in *S. cerevisia
   PIF1Δ-vs-RecQΔ 43 DEGs; 7,614 pqsfinder G4 sites; 3,105 hybrid-specific genes;
   PDS-in-RecQΔ coding-strand-G4 GSEA NES −1.34 (padj 2.6e-8).
 
-[Unreleased]: https://github.com/OWNER/nf-g4rnaseq/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/OWNER/nf-g4rnaseq/releases/tag/v0.1.0
+[Unreleased]: https://github.com/spegray/nf-g4rnaseq/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/spegray/nf-g4rnaseq/releases/tag/v0.1.0

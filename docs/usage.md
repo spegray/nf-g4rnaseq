@@ -58,7 +58,7 @@ the master table.
 ## 6. Profiles & running
 ```bash
 # containerized (recommended for others / HPC / cloud)
-nextflow run OWNER/nf-g4rnaseq -r main -profile docker --input ... --outdir results
+nextflow run spegray/nf-g4rnaseq -r master -profile docker --input ... --outdir results
 # or singularity / conda
 -profile singularity      -profile conda
 # reproduce the bundled yeast example
